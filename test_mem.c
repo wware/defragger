@@ -4,19 +4,33 @@
 #include <string.h>
 #define COMMENTS_ENABLED
 #include "common.h"
-#include "mem.h"
 
 #define MAX_SIZE   (8 * 1024)
-#define N   (1024 * 1024)
+#define N   (512 * 1024)
+
+#ifdef DEFRAG_LAYER
+#include "dflayer.h"
+#else
+#include "mem.h"
+#endif
+
 void *things[N];
 
+#ifdef DEFRAG_LAYER
+#define MALLOC(size)   dfmalloc(size)
+#define FREE(ptr)      dffree(ptr)
+#else
 #define MALLOC(size)   malloc(size)
 #define FREE(ptr)      free(ptr)
-
+#endif
 
 void report_memory()
 {
+#ifdef DEFRAG_LAYER
+    printf("%.3lf\n", dfusage());
+#else
     printf("%.3lf\n", physical_memory());
+#endif
 }
 
 int main(void)
@@ -45,6 +59,9 @@ int main(void)
         p = q;
     }
 
+    COMMENT("Middle memory usage.");
+    report_memory();
+
     COMMENT("Free all those small chunks of memory. Ideally we get all our memory back.");
     while (p != NULL) {
         q = *((void **) p);
@@ -52,7 +69,9 @@ int main(void)
         p = q;
     }
 
+#ifndef DEFRAG_LAYER
     COMMENT("Weep for the bytes that sacrificed themselves to run such useless code.");
+#endif
     report_memory();
     return 0;
 }

@@ -19,3 +19,8 @@ clean:
 test_mem: test_mem.o mem.o
 
 test_mem.o: mem.h
+
+test_mem_df: test_mem_df.o dflayer.o
+
+test_mem_df.o: mem.h test_mem.c
+	$(CC) $(CFLAGS) -DDEFRAG_LAYER=1 -o test_mem_df.o -c test_mem.c
