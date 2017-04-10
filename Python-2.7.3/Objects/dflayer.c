@@ -27,7 +27,13 @@ struct block {
 
 #define HEADER sizeof(struct block)
 
-#define MAX_SIZE   (3UL * 1024 * 1024 * 1024)
+#ifdef PY_SSIZE_T_MAX
+// Include/pyport.h
+#define MAX_SIZE   ((size_t) (PY_SSIZE_T_MAX))
+#else
+#define MAX_SIZE   ((size_t) (3UL * 1024 * 1024 * 1024))
+#endif
+
 static char *field = NULL;
 static unsigned long bytes_available;
 static struct block *first_by_size;
@@ -270,9 +276,10 @@ double dfusage(void)
 
 void dfinit(void)
 {
-    field = malloc(MAX_SIZE);
+    size_t sz = MAX_SIZE + HEADER;
+    field = malloc(sz);
     if (field == NULL) {
-        fprintf(stderr, "Can't allocate this memory\n");
+        fprintf(stderr, "You want a pool of memory (%lu) that's too big.\n", sz);
         exit(1);
     }
     COMMENT1("Set up a field of bytes at %p", field);
