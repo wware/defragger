@@ -231,6 +231,7 @@ POBJS=		\
 PARSER_OBJS=	$(POBJS) Parser/myreadline.o Parser/tokenizer.o
 
 PGOBJS=		\
+		Objects/dflayer.o \
 		Objects/obmalloc.o \
 		Python/mysnprintf.o \
 		Python/pyctype.o \
@@ -239,6 +240,7 @@ PGOBJS=		\
 		Parser/pgenmain.o
 
 PARSER_HEADERS= \
+		Include/dflayer.h \
 		Parser/parser.h \
 		Parser/tokenizer.h
 
@@ -322,6 +324,7 @@ OBJECT_OBJS=	\
 		Objects/codeobject.o \
 		Objects/complexobject.o \
 		Objects/descrobject.o \
+		Objects/dflayer.o \
 		Objects/enumobject.o \
 		Objects/exceptions.o \
 		Objects/genobject.o \
@@ -629,6 +632,7 @@ PYTHON_HEADERS= \
 		Include/compile.h \
 		Include/complexobject.h \
 		Include/descrobject.h \
+		Include/dflayer.h \
 		Include/dictobject.h \
 		Include/dtoa.h \
 		Include/enumobject.h \

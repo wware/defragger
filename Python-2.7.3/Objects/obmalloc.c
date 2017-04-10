@@ -1,5 +1,7 @@
 #include "Python.h"
 
+#include "dflayer.h"
+
 #ifdef WITH_PYMALLOC
 
 #ifdef WITH_VALGRIND
@@ -546,7 +548,7 @@ new_arena(void)
             return NULL;                /* overflow */
 #endif
         nbytes = numarenas * sizeof(*arenas);
-        arenaobj = (struct arena_object *)realloc(arenas, nbytes);
+        arenaobj = (struct arena_object *)dfrealloc(arenas, nbytes);
         if (arenaobj == NULL)
             return NULL;
         arenas = arenaobj;
@@ -577,7 +579,7 @@ new_arena(void)
     arenaobj = unused_arena_objects;
     unused_arena_objects = arenaobj->nextarena;
     assert(arenaobj->address == 0);
-    arenaobj->address = (uptr)malloc(ARENA_SIZE);
+    arenaobj->address = (uptr)dfmalloc(ARENA_SIZE);
     if (arenaobj->address == 0) {
         /* The allocation failed: return NULL after putting the
          * arenaobj back.
@@ -940,7 +942,7 @@ redirect:
      */
     if (nbytes == 0)
         nbytes = 1;
-    return (void *)malloc(nbytes);
+    return (void *)dfmalloc(nbytes);
 }
 
 /* free */
@@ -1054,7 +1056,7 @@ PyObject_Free(void *p)
                 unused_arena_objects = ao;
 
                 /* Free the entire arena. */
-                free((void *)ao->address);
+                dffree((void *)ao->address);
                 ao->address = 0;                        /* mark unassociated */
                 --narenas_currently_allocated;
 
@@ -1163,7 +1165,7 @@ PyObject_Free(void *p)
 redirect:
 #endif
     /* We didn't allocate this address. */
-    free(p);
+    dffree(p);
 }
 
 /* realloc.  If p is NULL, this acts like malloc(nbytes).  Else if nbytes==0,
@@ -1241,18 +1243,19 @@ PyObject_Realloc(void *p, size_t nbytes)
      * at p.  Instead we punt:  let C continue to manage this block.
      */
     if (nbytes)
-        return realloc(p, nbytes);
+        return dfrealloc(p, nbytes);
     /* C doesn't define the result of realloc(p, 0) (it may or may not
      * return NULL then), but Python's docs promise that nbytes==0 never
      * returns NULL.  We don't pass 0 to realloc(), to avoid that endcase
      * to begin with.  Even then, we can't be sure that realloc() won't
      * return NULL.
      */
-    bp = realloc(p, 1);
+    bp = dfrealloc(p, 1);
     return bp ? bp : p;
 }
 
 #else   /* ! WITH_PYMALLOC */
+#error "OUCH, please use WITH_PYMALLOC"
 
 /*==========================================================================*/
 /* pymalloc not enabled:  Redirect the entry points to malloc.  These will
